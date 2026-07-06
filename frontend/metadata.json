@@ -1,0 +1,5 @@
+{
+  "name": "Resume Audit Backend",
+  "description": "A clean, minimal FastAPI project skeleton for a Resume Analysis SaaS MVP.",
+  "requestFramePermissions": []
+}
