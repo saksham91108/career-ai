@@ -33,7 +33,7 @@ export default function AuthPage() {
     setError(''); setLoading(true)
     try {
       const form = new URLSearchParams()
-      form.append('username', email); form.append('password', password)
+      form.append('username', email.toLowerCase()); form.append('password', password)
       const { data } = await api.post('/login', form, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })

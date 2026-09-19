@@ -64,8 +64,12 @@ export default function AnalyzePage() {
     setIsDragging(false)
     const dropped = e.dataTransfer.files?.[0]
     if (dropped && dropped.type === 'application/pdf') {
-      setFile(dropped)
-      setError('')
+      if (dropped.size > 10 * 1024 * 1024) {
+        setError('File size exceeds the 10MB limit.')
+      } else {
+        setFile(dropped)
+        setError('')
+      }
     } else {
       setError('Only PDF files are supported.')
     }
@@ -221,7 +225,15 @@ export default function AnalyzePage() {
               className="hidden"
               onChange={(e) => {
                 const selected = e.target.files?.[0]
-                if (selected) { setFile(selected); setError('') }
+                if (selected) { 
+                  if (selected.size > 10 * 1024 * 1024) {
+                    setError('File size exceeds the 10MB limit.')
+                    setFile(null)
+                  } else {
+                    setFile(selected)
+                    setError('') 
+                  }
+                }
               }}
             />
           </div>

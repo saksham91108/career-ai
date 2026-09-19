@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Request
+from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pypdf import PdfReader
@@ -158,15 +159,15 @@ def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    user = db.query(User).filter(User.email == form_data.username).first()
+    user = db.query(User).filter(User.email == form_data.username.lower()).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid credentials.")
 
     if not user.is_verified:
         raise HTTPException(status_code=400, detail="Email not verified. Please sign up again.")
 
-    token = create_access_token(data={"sub": user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    access_token = create_access_token(data={"sub": user.email})
+    return {"access_token": access_token, "token_type": "bearer", "email": user.email}
 
 
 # =========================
@@ -267,6 +268,8 @@ async def analyze_resume_file(
 
     try:
         contents = await file.read()
+        if len(contents) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File size exceeds the 10MB limit.")
         pdf = PdfReader(io.BytesIO(contents))
         resume_text = "".join(page.extract_text() or "" for page in pdf.pages)
 
@@ -372,3 +375,4 @@ def chat_with_ai(
     except Exception as e:
         logger.error(f"Chat failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Chat failed.")
+
